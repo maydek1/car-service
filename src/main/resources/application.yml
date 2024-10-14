@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/cardb
+    username: postgres
+    password: 123
+  jpa:
+    hibernate:
+      ddl-auto: none
+  application:
+    name: CarStationService
+  profiles:
+    active: dev
+server:
+  port: 4560
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:8761/eureka/
+  instance:
+    preferIpAddress: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
