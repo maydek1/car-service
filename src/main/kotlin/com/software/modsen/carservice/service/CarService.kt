@@ -5,7 +5,8 @@ import com.software.modsen.carservice.exception.CarNotFoundException
 import com.software.modsen.carservice.exception.CarNumberAlreadyExistException
 import com.software.modsen.carservice.model.Car
 import com.software.modsen.carservice.repository.CarRepository
-import com.software.modsen.carservice.util.ExceptionMessage
+import com.software.modsen.carservice.util.carNumberAlreadyExists
+import com.software.modsen.carservice.util.carNotFound
 import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
 
@@ -27,7 +28,7 @@ class CarService(
 
     fun updateCar(id: Long, carRequest: CarRequest): Car {
         val car = carRepository.findById(id).orElseThrow {
-            CarNotFoundException(ExceptionMessage.carNotFound(id))
+            CarNotFoundException(carNotFound(id))
         }
 
         checkNumberToExist(car.number, carRequest.number)
@@ -40,7 +41,7 @@ class CarService(
 
     fun createCar(carRequest: CarRequest): Car {
         if (carRepository.existsByNumber(carRequest.number)) {
-            throw CarNumberAlreadyExistException(ExceptionMessage.carNumberAlreadyExists(carRequest.number))
+            throw CarNumberAlreadyExistException(carNumberAlreadyExists(carRequest.number))
         }
 
         val car = modelMapper.map(carRequest, Car::class.java)
@@ -49,7 +50,7 @@ class CarService(
 
     private fun getOrElseThrow(id: Long): Car {
         return carRepository.findById(id).orElseThrow {
-            CarNotFoundException(ExceptionMessage.carNotFound(id))
+            CarNotFoundException(carNotFound(id))
         }
     }
 
@@ -57,9 +58,9 @@ class CarService(
         return carRepository.findAll()
     }
 
-    private fun checkNumberToExist(currentNumber: String?, newNumber: String?) {
+    private fun checkNumberToExist(currentNumber: String, newNumber: String) {
         if (currentNumber != newNumber && carRepository.existsByNumber(newNumber)) {
-            throw CarNumberAlreadyExistException(ExceptionMessage.carNumberAlreadyExists(newNumber))
+            throw CarNumberAlreadyExistException(carNumberAlreadyExists(newNumber))
         }
     }
 }
