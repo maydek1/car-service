@@ -8,9 +8,5 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class MapperConfig {
     @Bean
-    fun modelMapper(): ModelMapper {
-        val modelMapper = ModelMapper()
-        modelMapper.configuration.matchingStrategy = MatchingStrategies.STRICT
-        return ModelMapper()
-    }
+    fun modelMapper(): ModelMapper = ModelMapper().apply{configuration.matchingStrategy = MatchingStrategies.STRICT}
 }

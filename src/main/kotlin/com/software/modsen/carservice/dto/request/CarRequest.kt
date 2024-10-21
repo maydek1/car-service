@@ -1,8 +1,10 @@
 package com.software.modsen.carservice.dto.request
 
 data class CarRequest(
-        var model: String? = null,
-        var number: String? = null,
-        var color: String? = null
-)
+        var model: String,
+        var number: String,
+        var color: String
+){
+        constructor() : this(number = "", model = "", color = "")
+}
 
