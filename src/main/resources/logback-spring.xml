@@ -1,0 +1,30 @@
+<configuration>
+
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>logstash:5044</destination>
+
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <fieldNames>
+                <message>message</message>
+                <logger>logger_name</logger>
+                <thread>thread_name</thread>
+                <level>level</level>
+                <timestamp>timestamp</timestamp>
+                <context>context</context>
+                <mdc>mdc</mdc>
+            </fieldNames>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="LOGSTASH" />
+    </root>
+
+    <logger name="org.springframework" level="INFO">
+        <appender-ref ref="LOGSTASH" />
+    </logger>
+    <logger name="com.software.modsen" level="INFO" additivity="false">
+        <appender-ref ref="LOGSTASH" />
+    </logger>
+
+</configuration>
