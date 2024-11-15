@@ -16,54 +16,54 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/cars")
 class CarController(
-        private val carService: CarService,
-        private val modelMapper: ModelMapper
+    private val carService: CarService,
+    private val modelMapper: ModelMapper
 ) {
 
     @Operation(summary = "Получить машину по ID")
     @ApiResponse(responseCode = "200", description = "Машина найдена",
-            content = [Content(schema = Schema(implementation = CarResponse::class))])
+        content = [Content(schema = Schema(implementation = CarResponse::class))])
     @ApiResponse(responseCode = "404", description = "Машина не найдена")
     @GetMapping("/{id}")
-    fun getCarById(@PathVariable id: Long): ResponseEntity<CarResponse> {
+    suspend fun getCarById(@PathVariable id: Long): ResponseEntity<CarResponse> {
         val car = carService.getCarById(id)
         return ResponseEntity.ok(modelMapper.map(car, CarResponse::class.java))
     }
 
     @Operation(summary = "Создать машину")
     @ApiResponse(responseCode = "201", description = "Машина успешно создана",
-            content = [Content(schema = Schema(implementation = CarResponse::class))])
+        content = [Content(schema = Schema(implementation = CarResponse::class))])
     @PostMapping
-    fun createCar(@RequestBody carRequest: CarRequest): ResponseEntity<CarResponse> {
+    suspend fun createCar(@RequestBody carRequest: CarRequest): ResponseEntity<CarResponse> {
         val car = carService.createCar(carRequest)
         return ResponseEntity(modelMapper.map(car, CarResponse::class.java), HttpStatus.CREATED)
     }
 
     @Operation(summary = "Обновить информацию о машине")
     @ApiResponse(responseCode = "200", description = "Машина успешно обновлена",
-            content = [Content(schema = Schema(implementation = CarResponse::class))])
+        content = [Content(schema = Schema(implementation = CarResponse::class))])
     @ApiResponse(responseCode = "404", description = "Машина не найдена")
     @PutMapping("/{id}")
-    fun updateCar(@PathVariable id: Long, @RequestBody carRequest: CarRequest): ResponseEntity<CarResponse> {
+    suspend fun updateCar(@PathVariable id: Long, @RequestBody carRequest: CarRequest): ResponseEntity<CarResponse> {
         val updatedCar = carService.updateCar(id, carRequest)
         return ResponseEntity.ok(modelMapper.map(updatedCar, CarResponse::class.java))
     }
 
     @Operation(summary = "Удалить машину по ID")
     @ApiResponse(responseCode = "200", description = "Машина успешно удалена",
-            content = [Content(schema = Schema(implementation = CarResponse::class))])
+        content = [Content(schema = Schema(implementation = CarResponse::class))])
     @ApiResponse(responseCode = "404", description = "Машина не найдена")
     @DeleteMapping("/{id}")
-    fun deleteCarById(@PathVariable id: Long): ResponseEntity<CarResponse> {
+    suspend fun deleteCarById(@PathVariable id: Long): ResponseEntity<CarResponse> {
         val deletedCar = carService.deleteCarById(id)
         return ResponseEntity.ok(modelMapper.map(deletedCar, CarResponse::class.java))
     }
 
     @Operation(summary = "Получить список всех машин")
     @ApiResponse(responseCode = "200", description = "Машины успешно получены",
-            content = [Content(schema = Schema(implementation = CarResponseSet::class))])
+        content = [Content(schema = Schema(implementation = CarResponseSet::class))])
     @GetMapping
-    fun getAllCars(): ResponseEntity<CarResponseSet> {
+    suspend fun getAllCars(): ResponseEntity<CarResponseSet> {
         val cars = carService.getAllCars()
             .map { modelMapper.map(it, CarResponse::class.java) }
             .toSet()
