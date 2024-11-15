@@ -36,6 +36,7 @@
         <testcontainers.version>1.20.2</testcontainers.version>
         <cucumber.version>7.19.0</cucumber.version>
         <logstash.version>8.0</logstash.version>
+        <kotlinx.version>1.9.0</kotlinx.version>
     </properties>
     <dependencies>
         <dependency>
@@ -167,6 +168,17 @@
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
             <version>${logstash.version}</version>
+          </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-core</artifactId>
+            <version>${kotlinx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-reactor</artifactId>
+            <version>${kotlinx.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
     </dependencies>
