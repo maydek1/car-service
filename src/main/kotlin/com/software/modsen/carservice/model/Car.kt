@@ -1,12 +1,11 @@
 package com.software.modsen.carservice.model
 
-import jakarta.persistence.*
+import org.springframework.data.annotation.Id
+import org.springframework.data.relational.core.mapping.Table
 
-@Entity
 @Table(name = "car")
 data class Car(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long,
     var number: String,
     var model: String,

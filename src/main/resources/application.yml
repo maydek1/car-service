@@ -1,17 +1,20 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://postgres:5432/cardb
+  r2dbc:
     username: postgres
     password: 123
-  jpa:
-    hibernate:
-      ddl-auto: none
+    url: r2dbc:postgresql://localhost:5432/carDB
   application:
     name: CarStationService
   profiles:
     active: dev
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    url: jdbc:postgresql://localhost:5432/carDB
+    user: postgres
+    password: 123
 server:
   port: 4560
+
 
 eureka:
   client:

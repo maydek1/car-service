@@ -7,10 +7,10 @@ import com.software.modsen.carservice.model.Car
 import com.software.modsen.carservice.repository.CarRepository
 import com.software.modsen.carservice.util.carNumberAlreadyExists
 import com.software.modsen.carservice.util.carNotFound
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Service
 class CarService(
@@ -18,63 +18,60 @@ class CarService(
     private val modelMapper: ModelMapper
 ) {
 
-    suspend fun getCarById(id: Long): Car {
-        return getOrElseThrow(id)
+    fun getCarById(id: Long): Mono<Car> {
+        return carRepository.findById(id)
+            .switchIfEmpty(Mono.error(CarNotFoundException(carNotFound(id))))
     }
 
-    suspend fun deleteCarById(id: Long): Car {
-        val car = getOrElseThrow(id)
-        withContext(Dispatchers.IO) {
-            carRepository.deleteById(id)
-        }
-        return car
-    }
-
-    suspend fun updateCar(id: Long, carRequest: CarRequest): Car {
-        val car = withContext(Dispatchers.IO) {
-            carRepository.findById(id).orElseThrow {
-                CarNotFoundException(carNotFound(id))
+    fun deleteCarById(id: Long): Mono<Car> {
+        return getCarById(id)
+            .flatMap { car ->
+                carRepository.deleteById(car.id).thenReturn(car)
             }
-        }
-
-        checkNumberToExist(car.number, carRequest.number)
-
-        val updatedCar = modelMapper.map(carRequest, Car::class.java).apply {
-            this.id = car.id
-        }
-        return withContext(Dispatchers.IO) {
-            carRepository.save(updatedCar)
-        }
     }
 
-    suspend fun createCar(carRequest: CarRequest): Car {
-        if (withContext(Dispatchers.IO) { carRepository.existsByNumber(carRequest.number) }) {
-            throw CarNumberAlreadyExistException(carNumberAlreadyExists(carRequest.number))
-        }
-
-        val car = modelMapper.map(carRequest, Car::class.java)
-        return withContext(Dispatchers.IO) {
-            carRepository.save(car)
-        }
-    }
-
-    private suspend fun getOrElseThrow(id: Long): Car {
-        return withContext(Dispatchers.IO) {
-            carRepository.findById(id).orElseThrow {
-                CarNotFoundException(carNotFound(id))
+    fun updateCar(id: Long, carRequest: CarRequest): Mono<Car> {
+        return carRepository.findById(id)
+            .switchIfEmpty(Mono.error(CarNotFoundException(carNotFound(id))))
+            .flatMap { existingCar ->
+                checkNumberToExist(existingCar.number, carRequest.number)
+                    .then(
+                        Mono.just(modelMapper.map(carRequest, Car::class.java).apply {
+                            this.id = existingCar.id
+                        })
+                    )
             }
-        }
+            .flatMap(carRepository::save)
     }
 
-    suspend fun getAllCars(): List<Car> {
-        return withContext(Dispatchers.IO) {
-            carRepository.findAll()
-        }
+    fun createCar(carRequest: CarRequest): Mono<Car> {
+        return carRepository.existsByNumber(carRequest.number)
+            .flatMap { exists ->
+                if (exists) {
+                    Mono.error(CarNumberAlreadyExistException(carNumberAlreadyExists(carRequest.number)))
+                } else {
+                    val car = modelMapper.map(carRequest, Car::class.java)
+                    carRepository.save(car)
+                }
+            }
     }
 
-    private suspend fun checkNumberToExist(currentNumber: String, newNumber: String) {
-        if (currentNumber != newNumber && withContext(Dispatchers.IO) { carRepository.existsByNumber(newNumber) }) {
-            throw CarNumberAlreadyExistException(carNumberAlreadyExists(newNumber))
+    fun getAllCars(): Flux<Car> {
+        return carRepository.findAll()
+    }
+
+    private fun checkNumberToExist(currentNumber: String, newNumber: String): Mono<Void> {
+        return if (currentNumber != newNumber) {
+            carRepository.existsByNumber(newNumber)
+                .flatMap { exists ->
+                    if (exists) {
+                        Mono.error(CarNumberAlreadyExistException(carNumberAlreadyExists(newNumber)))
+                    } else {
+                        Mono.empty()
+                    }
+                }
+        } else {
+            Mono.empty()
         }
     }
 }
